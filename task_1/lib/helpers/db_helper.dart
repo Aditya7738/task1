@@ -11,12 +11,12 @@ class DBHelper {
   final database_Name = "user.db";
   final table_Name = "user";
   final firstColumn = "userId";
-  final secondColumn = "firstName";
+  final secondColumn = "name";
 
-  final thirdColumn = "email";
+
   final forthColumn = "phoneNo";
   final fifthColumn = "password";
-  final sixthColumn = "password";
+  final sixthColumn = "username";
   final seventhColumn = "address";
 
   Future<Database?> get db async {
@@ -28,20 +28,23 @@ class DBHelper {
     return null;
   }
 
+   late String path;
+
   initDatabase() async {
     io.Directory documentDirectory =
         await getApplicationDocumentsDirectory(); //creating db in local storage
-    String path = join(documentDirectory.path, database_Name); //path of db
+    path = join(documentDirectory.path, database_Name); //path of db
     var db = await openDatabase(path, version: 1, onCreate: _onCreate);
     print("DATABASE CREATED");
     return db;
   }
 
   _onCreate(Database db, int version) async {
+    db.delete("$table_Name");
     String sql = '''CREATE TABLE $table_Name (
       $firstColumn TEXT PRIMARY_KEY,
        $secondColumn TEXT,
-       $thirdColumn TEXT, 
+    
        $forthColumn TEXT, 
        $fifthColumn TEXT, 
        $sixthColumn TEXT
@@ -54,12 +57,23 @@ class DBHelper {
 
   Future<UserModel> insert(UserModel userModel) async {
     var client = await db;
+
+    
+
+
     //client.delete();[]
     if (client != null) {
       print("user INSERT");
       print(userModel.toMap().toString());
+
+      final value = await client.insert(table_Name, userModel.toMap());
+
+      print("RESULT $value");
+
       userModel.userId =
           (await client.insert(table_Name, userModel.toMap())) as String;
+
+           print("userModel.userId ${userModel.userId}");
       print("user INSERTED");
       return userModel;
     } else {
@@ -68,6 +82,8 @@ class DBHelper {
       return userModel;
     }
   }
+
+
 
   // Future<List<CartProductModel>> getCartList() async{
   //   var client = await db;

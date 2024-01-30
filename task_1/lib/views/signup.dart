@@ -19,8 +19,6 @@ class _SignupPageState extends State<SignupPage> {
 
   final TextEditingController _phoneNoController = TextEditingController();
 
-  final TextEditingController _emailController = TextEditingController();
-
   final TextEditingController _userNameController = TextEditingController();
 
   final TextEditingController _nameController = TextEditingController();
@@ -32,8 +30,6 @@ class _SignupPageState extends State<SignupPage> {
       TextEditingController();
 
   String phone = "";
-
-  String email = "";
 
   String user_name = "";
 
@@ -142,23 +138,7 @@ class _SignupPageState extends State<SignupPage> {
                       const SizedBox(
                         height: 30.0,
                       ),
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          return ValidationHelper.isEmailValid(value);
-                        },
-                        decoration: const InputDecoration(
-                          // errorText: ,
-                          labelText: "Enter your email*",
-                          border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(20.0))),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 30.0,
-                      ),
+                    
                       TextFormField(
                         controller: _userNameController,
                         keyboardType: TextInputType.name,
@@ -279,7 +259,7 @@ class _SignupPageState extends State<SignupPage> {
                           if (_formKey.currentState!.validate()) {
                             setState(() {
                               phone = _phoneNoController.text;
-                              email = _emailController.text;
+
                               user_name = _userNameController.text;
                               name = _nameController.text;
                               address = _addressController.text;
@@ -289,14 +269,14 @@ class _SignupPageState extends State<SignupPage> {
 
                             Random random = new Random();
                             String randomNumber = random.nextInt(10).toString();
+                            //String randomNumber = "";
 
-                            print("$phone $email $name $user_name $address");
+                            print("$phone $name $user_name $address");
 
                             UserModel userModel = UserModel(
                                 userId: randomNumber,
                                 name: name,
                                 userName: user_name,
-                                email: email,
                                 phoneNo: phone,
                                 password: password,
                                 address: address);

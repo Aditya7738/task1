@@ -4,15 +4,13 @@ class UserModel {
   late String userId;
   late String name;
 
-  late String email;
   late String phoneNo;
   late String password;
   late String userName;
-   late String address;
+  late String address;
 
   UserModel(
       {required this.userId,
-      required this.email,
       required this.userName,
       required this.name,
       required this.phoneNo,
@@ -21,10 +19,10 @@ class UserModel {
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
-      "user_id": userId,
+      "userId": userId,
       "name": name,
-      "email": email,
-      "phone_no": phoneNo,
+      "username": userName,
+      "phoneNo": phoneNo,
       "password": password,
       "address": address
     };
@@ -33,12 +31,12 @@ class UserModel {
   }
 
   UserModel.fromMap(Map<String, dynamic> userData) {
-    userId = userData["user_id"];
+    userId = userData["userId"];
     name = userData["name"];
 
-    email = userData["email"];
-    phoneNo = userData["phone_no"];
+    userName = userData["username"];
+    phoneNo = userData["phoneNo"];
     password = userData["password"];
-    address =  userData["address"];
+    address = userData["address"];
   }
 }
