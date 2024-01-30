@@ -57,6 +57,7 @@ class _SignupPageState extends State<SignupPage> {
     super.initState();
 
     dbHelper = DBHelper();
+    dbHelper.initDatabase();
   }
 
   @override

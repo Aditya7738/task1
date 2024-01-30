@@ -9,7 +9,7 @@ class DBHelper {
   static Database? _db;
 
   final database_Name = "user.db";
-  final table_Name = "user";
+  final table_Name = "customer";
   final firstColumn = "userId";
   final secondColumn = "name";
 
