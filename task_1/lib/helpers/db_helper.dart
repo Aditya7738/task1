@@ -9,7 +9,7 @@ class DBHelper {
   static Database? _db;
 
   final database_Name = "user.db";
-  final table_Name = "customer";
+  final table_Name = "user";
   final firstColumn = "userId";
   final secondColumn = "name";
 
@@ -47,7 +47,7 @@ class DBHelper {
     
        $forthColumn TEXT, 
        $fifthColumn TEXT, 
-       $sixthColumn TEXT
+       $sixthColumn TEXT,
        $seventhColumn TEXT
       );''';
 
