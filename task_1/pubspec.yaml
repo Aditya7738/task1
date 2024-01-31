@@ -20,6 +20,9 @@ dev_dependencies:
   page_transition: ^2.1.0
   sqflite: ^2.3.2
   path_provider: ^2.1.2
+  http: ^1.2.0
+  badges: ^3.1.2
+  provider: ^6.1.1
 
 flutter:
   uses-material-design: true

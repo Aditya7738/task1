@@ -8,6 +8,7 @@ class UserModel {
   late String password;
   late String userName;
   late String address;
+  late int isLogout;
 
   UserModel(
       {required this.userId,
@@ -15,7 +16,8 @@ class UserModel {
       required this.name,
       required this.phoneNo,
       required this.password,
-      required this.address});
+      required this.address,
+      required this.isLogout});
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
@@ -24,7 +26,8 @@ class UserModel {
       "username": userName,
       "phoneNo": phoneNo,
       "password": password,
-      "address": address
+      "address": address,
+      "isLogout": isLogout
     };
 
     return map;
@@ -38,5 +41,6 @@ class UserModel {
     phoneNo = userData["phoneNo"];
     password = userData["password"];
     address = userData["address"];
+    isLogout = userData["isLogout"];
   }
 }

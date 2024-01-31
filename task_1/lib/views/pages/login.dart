@@ -1,7 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:task_1/helpers/db_helper.dart';
 import 'package:task_1/helpers/validation_helper.dart';
-import 'package:task_1/views/signup.dart';
+
+import 'package:task_1/views/pages/catalog_page.dart';
+import 'package:task_1/views/pages/signup.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,12 +25,21 @@ class _LoginPageState extends State<LoginPage> {
   bool isObscured2 = true;
 
   bool isLoading = false;
-  String username = "";
-  String password = "";
 
   bool isLoginUnSuccessful = false;
 
   bool navigationLoading = false;
+
+  late DBHelper dbHelper;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    dbHelper = DBHelper();
+    dbHelper.initDatabase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +68,8 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(
                           height: 20.0,
                         ),
-                        const Text("Welcome!", style: TextStyle(fontSize: 20.0)),
+                        const Text("Welcome!",
+                            style: TextStyle(fontSize: 20.0)),
                         const SizedBox(
                           height: 20.0,
                         ),
@@ -130,74 +143,38 @@ class _LoginPageState extends State<LoginPage> {
                         GestureDetector(
                           onTap: () async {
                             if (_formKey.currentState!.validate()) {
-                              setState(() {
-                                username = _usernameController.text;
-                                password = _passwordController.text;
-                              });
+                              final username = _usernameController.text;
+                              final password = _passwordController.text;
+
                               print("$username $password");
-
-                              // List<String> list = email.split('@');
-                              // String username = list[0];
-
-                              // Map<String, dynamic> data = {
-                              //   "email": email,
-                              //   "password": password,
-                              //   "username": username,
-                              // };
-
-                              // print("LOGIN DATA $data");
 
                               setState(() {
                                 isLoading = true;
                               });
 
-                              //save data
+                              final result =
+                                  await dbHelper.checkLogin(username, password);
 
                               setState(() {
                                 isLoading = false;
                               });
 
-                              // if (response != null) {
-                              //   setState(() {
-                              //     navigationLoading = true;
-                              //   });
-                              //   String body =
-                              //       await response.stream.bytesToString();
-
-                              //       print("BODY LOGIN $body");
-
-                              //   List<Map<String, dynamic>> data = <Map<String, dynamic>>[];
-                              //   try {
-                              //     data = List<Map<String, dynamic>>.from(jsonDecode(body));
-                              //     print("LOGIN JSON DECODE DATA $data");
-                              //   } catch (e) {
-                              //     print('Error decoding: $e');
-                              //   }
-
-                              //   // String body = response.body;
-
-                              //   // Map<String, dynamic> data = <String, dynamic>{};
-
-                              //   // try {
-                              //   //   data = jsonDecode(body);
-                              //   //   print("LOGIN JSON DECODE DATA $data");
-                              //   // } catch (e) {
-                              //   //   print('Error decoding: $e');
-                              //   // }
-
-                              //   customerProvider.setCustomerData(data); //correct code uncomment it
-
-                              //   setState(() {
-                              //     navigationLoading = false;
-                              //   });
-
-                              //   // Navigator.of(context).pushReplacement(MaterialPageRoute(
-                              //   //     builder: (context) => YouPage()));
-                              // } else {
-                              //   setState(() {
-                              //     isLoginUnSuccessful = true;
-                              //   });
-                              //}
+                              if (result != null) {
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CatalogPage(
+                                        userModel: result,
+                                      ),
+                                    ));
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        padding: EdgeInsets.all(15.0),
+                                        backgroundColor: Colors.red,
+                                        content: Text(
+                                            "Username or password is wrong")));
+                              }
                             }
                           },
                           child: Container(
@@ -209,14 +186,10 @@ class _LoginPageState extends State<LoginPage> {
                                   vertical: 10.0, horizontal: 20.0),
                               child: Center(
                                 child: isLoading
-                                    ? const SizedBox(
-                                        width: 20.0,
-                                        height: 20.0,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2.0,
-                                          backgroundColor: Color(0xffCC868A),
-                                        ),
+                                    ? CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.0,
+                                        backgroundColor: Color(0xffCC868A),
                                       )
                                     : const Text(
                                         "LOGIN",
@@ -234,20 +207,22 @@ class _LoginPageState extends State<LoginPage> {
                             child: RichText(
                                 text: TextSpan(
                                     text: "Don't have account?",
-                                    style: const TextStyle(color: Colors.black),
+                                    style: const TextStyle(
+                                        color: Colors.black, fontSize: 17.0),
                                     children: <TextSpan>[
                               TextSpan(
                                 text: '  Create Account',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 17.0,
                                   color: Color(0xffCC868A),
                                 ),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (context) =>  SignupPage(),
-                                    )
-                                    );
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                      builder: (context) => SignupPage(),
+                                    ));
                                   },
                               ),
                             ]))),

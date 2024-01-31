@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:task_1/helpers/db_helper.dart';
 import 'package:task_1/helpers/validation_helper.dart';
 import 'package:task_1/model/user_model.dart';
-import 'package:task_1/views/login.dart';
+import 'package:task_1/views/pages/login.dart';
 
 class SignupPage extends StatefulWidget {
   SignupPage({super.key});
@@ -139,7 +139,6 @@ class _SignupPageState extends State<SignupPage> {
                       const SizedBox(
                         height: 30.0,
                       ),
-                    
                       TextFormField(
                         controller: _userNameController,
                         keyboardType: TextInputType.name,
@@ -280,7 +279,8 @@ class _SignupPageState extends State<SignupPage> {
                                 userName: user_name,
                                 phoneNo: phone,
                                 password: password,
-                                address: address);
+                                address: address,
+                                isLogout: 1);
 
                             setState(() {
                               savingData = true;
@@ -336,14 +336,15 @@ class _SignupPageState extends State<SignupPage> {
                           child: RichText(
                               text: TextSpan(
                                   text: 'Already have an account?',
-                                  style: const TextStyle(color: Colors.black),
+                                  style: const TextStyle(
+                                      color: Colors.black, fontSize: 17.0),
                                   children: <TextSpan>[
                             TextSpan(
                               text: ' Login',
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xffCC868A),
-                              ),
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xffCC868A),
+                                  fontSize: 17.0),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
                                   Navigator.of(context).push(MaterialPageRoute(
