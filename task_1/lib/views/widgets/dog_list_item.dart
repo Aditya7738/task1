@@ -2,20 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:task_1/constants/constants.dart';
 import 'package:task_1/helpers/db_helper.dart';
 import 'package:task_1/model/dog_data_model.dart';
+import 'package:task_1/model/dog_image_model.dart';
 import 'package:task_1/providers/wishlist_provider.dart';
 import 'package:task_1/views/pages/dog_details.dart';
 import 'package:provider/provider.dart';
 
 class DogListItem extends StatefulWidget {
   final DogDataModel dogDataModel;
-  const DogListItem({super.key, required this.dogDataModel});
+  final String imageUrl;
+  const DogListItem({
+    super.key,
+    required this.dogDataModel,
+    required this.imageUrl,
+  });
 
   @override
   State<DogListItem> createState() => _DogListItemState();
 }
 
 class _DogListItemState extends State<DogListItem> {
+  //late DogImageModel dogImageModel;
   DogDataModel dogDataModel = DogDataModel();
+  // String imageUrl = "";
   late DBHelper dbHelper;
   @override
   void initState() {
@@ -23,24 +31,38 @@ class _DogListItemState extends State<DogListItem> {
     super.initState();
     dbHelper = DBHelper();
     dogDataModel = widget.dogDataModel;
+    // imageUrl = widget.imageUrl;
+    // if (widget.dogImageModel != null) {
+    //   dogImageModel = widget.dogImageModel!;
+    // }
+
+    print(widget.imageUrl);
   }
 
   @override
   Widget build(BuildContext context) {
     final wishListProvider = Provider.of<WishlistProvider>(context);
+    print("list item url ${widget.imageUrl}");
+      print("wishListProvider.favDogIds ${wishListProvider.favDogIds}");
+      print("dogDataModel.id ${dogDataModel.id}");
+      print("wishListProvider.favDogIds.contains(dogDataModel.id) ${wishListProvider.favDogIds.contains(dogDataModel.id)}");
     return GestureDetector(
       onTap: () {
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DogDetails(dogDataModel: dogDataModel),
+              builder: (context) => DogDetails(
+                dogDataModel: dogDataModel,
+                imageUrl: widget.imageUrl,
+              ),
             ));
       },
       child: Card(
         child: Column(
           children: [
             Image.network(
-              Constants.dogImageUrl,
+              //"https://cdn2.thedogapi.com/images/BJcNbec4X_1280.jpg"
+              widget.imageUrl,
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) {
                   return child;
@@ -79,6 +101,7 @@ class _DogListItemState extends State<DogListItem> {
                   ),
                   IconButton(
                       icon: Icon(
+                       
                         wishListProvider.favDogIds.contains(dogDataModel.id)
                             ? Icons.favorite
                             : Icons.favorite_border_outlined,
@@ -92,17 +115,23 @@ class _DogListItemState extends State<DogListItem> {
                           await dbHelper
                               .deleteItemFromWishList(dogDataModel.id!);
                           wishListProvider.removeFromWishlist(dogDataModel.id!);
+                          print(
+                              "wishListProvider.favDogIds ${wishListProvider.favDogIds}");
                           print("Dog is removed from wishlist");
                         } else if (wishListProvider.favDogIds.length < 5) {
                           Map<String, dynamic> data = {
                             'userId': wishListProvider.userId,
                             'dogId': dogDataModel.id.toString(),
                             'name': dogDataModel.name!,
-                            'referenceImageId': dogDataModel.referenceImageId!
+                            'imageUrl': widget.imageUrl
                           };
 
-                          await dbHelper.insertIntoWishlistTable(data);
                           wishListProvider.addToWishlist(dogDataModel.id!);
+
+                          await dbHelper.insertIntoWishlistTable(data);
+                          print(
+                              "wishListProvider.favDogIds ${wishListProvider.favDogIds}");
+
                           print("Dog is added to wishlist");
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(

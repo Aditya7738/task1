@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:task_1/model/dog_data_model.dart';
+import 'package:task_1/model/dog_image_model.dart';
 
 class ApiService {
   static String domain = "https://api.thedogapi.com/";
@@ -67,5 +68,33 @@ class ApiService {
     } else {
       return null;
     }
+  }
+
+  static Future<DogImageModel?> getDogImages(String referenceImageId) async {
+    final url = domain + "v1/images/$referenceImageId";
+
+    Uri uri = Uri.parse(url);
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      try {
+        var list = jsonDecode(response.body);
+
+        DogImageModel dogImageModel = DogImageModel(
+          id: list["id"],
+          url: list["url"],
+          breeds: list["breeds"] == null
+              ? []
+              : List<Breed>.from(list["breeds"]!.map((x) => Breed.fromJson(x))),
+          width: list["width"],
+          height: list["height"],
+        );
+
+        return dogImageModel;
+      } catch (e) {
+        print(e.toString());
+      }
+    }
+    return null;
   }
 }

@@ -8,7 +8,8 @@ import 'package:provider/provider.dart';
 
 class DogDetails extends StatefulWidget {
   DogDataModel dogDataModel;
-  DogDetails({super.key, required this.dogDataModel});
+    final String imageUrl;
+  DogDetails({super.key, required this.dogDataModel, required this.imageUrl});
 
   @override
   State<DogDetails> createState() => _DogDetailsState();
@@ -38,7 +39,7 @@ class _DogDetailsState extends State<DogDetails> {
       body: Column(
         children: [
           Image.network(
-            Constants.dogImageUrl,
+            widget.imageUrl,
             width: MediaQuery.of(context).size.width,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) {
@@ -81,18 +82,24 @@ class _DogDetailsState extends State<DogDetails> {
                           await dbHelper
                               .deleteItemFromWishList(dogDataModel.id!);
 
+                              
+
                           wishListProvider.removeFromWishlist(dogDataModel.id!);
+
+                            print("wishListProvider.favDogIds ${wishListProvider.favDogIds}");
                           print("Dog is removed from wishlist");
                         } else if (wishListProvider.favDogIds.length < 5) {
                           Map<String, dynamic> data = {
                             'userId': wishListProvider.userId,
                             'dogId': dogDataModel.id.toString(),
                             'name': dogDataModel.name!,
-                            'referenceImageId': dogDataModel.referenceImageId!
+                            'imageUrl': widget.imageUrl
                           };
                           await dbHelper.insertIntoWishlistTable(data);
 
                           wishListProvider.addToWishlist(dogDataModel.id!);
+
+                          print("wishListProvider.favDogIds ${wishListProvider.favDogIds}");
 
                           print("Dog is added to wishlist");
                         } else {

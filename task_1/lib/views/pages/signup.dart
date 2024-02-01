@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:task_1/helpers/db_helper.dart';
 import 'package:task_1/helpers/validation_helper.dart';
 import 'package:task_1/model/user_model.dart';
+import 'package:task_1/providers/wishlist_provider.dart';
 import 'package:task_1/views/pages/login.dart';
+
 
 class SignupPage extends StatefulWidget {
   SignupPage({super.key});
@@ -62,6 +64,8 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
         appBar: AppBar(
           title: Text("Signup"),
@@ -273,6 +277,8 @@ class _SignupPageState extends State<SignupPage> {
 
                             print("$phone $name $user_name $address");
 
+
+
                             UserModel userModel = UserModel(
                                 userId: randomNumber,
                                 name: name,
@@ -288,9 +294,13 @@ class _SignupPageState extends State<SignupPage> {
 
                             await dbHelper.insert(userModel);
 
+                            print("getAllUsers ${await dbHelper.getAllUsers()}");
+
                             setState(() {
                               savingData = false;
                             });
+
+
 
                             print("SAVED DATA $userModel");
 

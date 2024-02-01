@@ -29,7 +29,7 @@ class DBHelper {
     }
 
     _db = await initDatabase();
-    return null;
+    return _db;
   }
 
   _onCreate(Database db, int version) async {
@@ -83,6 +83,18 @@ class DBHelper {
     }
   }
 
+  Future<List<UserModel>?> getAllUsers() async {
+    final database = await db;
+    if (database != null) {
+      final List<Map<String, dynamic>> maps = await database.query(tableName);
+
+      return List.generate(maps.length, (i) {
+        return UserModel.fromMap(maps[i]);
+      });
+    }
+    return null;
+  }
+
   Future<UserModel?> checkLogin(String userName, String password) async {
     final database = await db;
     if (database != null) {
@@ -99,10 +111,10 @@ class DBHelper {
         UserModel userModel = UserModel(
             userId: result[0]["userId"].toString(),
             name: result[0]["name"].toString(),
-            userName: result[0]["phoneNo"].toString(),
-            phoneNo: result[0]["password"].toString(),
-            password: result[0]["username"].toString(),
-            address: result[0]["username"].toString(),
+            userName: result[0]["username"].toString(),
+            phoneNo: result[0]["phoneNo"].toString(),
+            password: result[0]["password"].toString(),
+            address: result[0]["address"].toString(),
             isLogout: 1);
         return userModel;
       }
@@ -133,10 +145,33 @@ class DBHelper {
       userId TEXT,
       dogId TEXT,
       name TEXT,
-      referenceImageId TEXT
+      imageUrl TEXT
     )
   ''');
     }
+  }
+
+  Future<bool> isTableExists() async {
+    final database = await db;
+    if (database != null) {
+      final List<Map<String, dynamic>> tables = await database.query(
+          'sqlite_master',
+          where: 'name = ?',
+          whereArgs: [wishListTableName]);
+
+      print("tables $tables");
+
+      for (final table in tables) {
+        print("Table $table");
+        final String name = table['name'] as String;
+        if (name == wishListTableName) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+    return false;
   }
 
   Future<List<WishlistModel>?> getWishList() async {
@@ -145,14 +180,36 @@ class DBHelper {
       final List<Map<String, dynamic>> maps =
           await database.query(wishListTableName);
 
-      return List.generate(maps.length, (i) {
+      print("wishlistmaps $maps");
+
+      List<WishlistModel> list = List.generate(maps.length, (i) {
         return WishlistModel.fromMap(maps[i]);
       });
+
+      print("wishlist $list");
+
+      return list;
     }
     return null;
   }
 
-  Future<List<WishlistModel>?> getFavDogsByUserId(int userId) async {
+  Future<bool> isDogInFavorites(String userId, String dogId) async {
+    var client = await db;
+
+    if (client != null) {
+      List<Map<String, dynamic>> results = await client.query(
+        wishListTableName,
+        where: "userId = ? AND dogId LIKE ?",
+        whereArgs: [userId, dogId],
+      );
+
+      // If there is at least one row, it means the dog is in favorites
+      return results.isNotEmpty;
+    } 
+    return false;
+  }
+
+  Future<List<WishlistModel>?> getFavDogsByUserId(String userId) async {
     final database = await db;
     if (database != null) {
       final List<Map<String, dynamic>> maps = await database.query(
@@ -161,16 +218,21 @@ class DBHelper {
         whereArgs: [userId],
       );
 
+      print("wishlistmaps $maps");
+
       List<WishlistModel> list = <WishlistModel>[];
 
       for (int i = 0; i < maps.length; i++) {
         list.add(WishlistModel(
             id: maps[i]["id"],
-            userId: int.parse(maps[i]["userId"]),
+            userId: maps[i]["userId"],
             dogId: maps[i]["dogId"],
             name: maps[i]["name"],
-            referenceImageId: maps[i]["referenceImageId"]));
+            imageUrl: maps[i]["imageUrl"]));
       }
+
+      print("wishlist $list");
+      print("wishlist length ${list.length}");
 
       return list;
     }
@@ -193,7 +255,7 @@ class DBHelper {
   //   print("TABLE CREATED");
   // }
 
-  Future<UserModel?> getUserById(int userId) async {
+  Future<UserModel?> getUserById(String userId) async {
     final database = await db;
     if (database != null) {
       final List<Map<String, dynamic>> maps = await database.query(
@@ -202,16 +264,21 @@ class DBHelper {
         whereArgs: [userId],
       );
 
+      print("user with id is there $maps");
+
       if (maps.isNotEmpty) {
         UserModel userModel = UserModel(
             userId: maps[0]["userId"].toString(),
             name: maps[0]["name"].toString(),
-            userName: maps[0]["phoneNo"].toString(),
-            phoneNo: maps[0]["password"].toString(),
-            password: maps[0]["username"].toString(),
-            address: maps[0]["username"].toString(),
-            isLogout: 1);
+            userName: maps[0]["username"].toString(),
+            phoneNo: maps[0]["phoneNo"].toString(),
+            password: maps[0]["password"].toString(),
+            address: maps[0]["address"].toString(),
+            isLogout: maps[0]["isLogout"]);
         return userModel;
+      } else {
+        print("user with id is not there $maps");
+        return null;
       }
     }
     return null;
@@ -220,16 +287,20 @@ class DBHelper {
   Future<int> insertIntoWishlistTable(Map<String, dynamic> data) async {
     final database = await db;
     if (database != null) {
-      return await database.insert(
+      int result = await database.insert(
         wishListTableName,
         {
           'userId': data["userId"],
           'dogId': data["dogId"],
           'name': data["name"],
-          'referenceImageId': data["referenceImageId"]
+          'imageUrl': data["imageUrl"]
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
+
+      getWishList();
+
+      return result;
     } else {
       return -1;
     }
@@ -240,9 +311,11 @@ class DBHelper {
     if (database != null) {
       await database.delete(
         wishListTableName,
-        where: 'dog_id = ?',
+        where: 'dogId = ?',
         whereArgs: [dog_id],
       );
+
+      getWishList();
     }
   }
 }

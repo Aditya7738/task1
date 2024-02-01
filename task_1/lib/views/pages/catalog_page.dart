@@ -4,6 +4,7 @@ import 'package:task_1/constants/constants.dart';
 import 'package:task_1/helpers/db_helper.dart';
 import 'package:task_1/model/dog_data_model.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:task_1/model/dog_image_model.dart';
 import 'package:task_1/model/user_model.dart';
 import 'package:task_1/providers/wishlist_provider.dart';
 import 'package:task_1/views/pages/dog_details.dart';
@@ -32,6 +33,7 @@ class _CatalogPageState extends State<CatalogPage> {
   Future<void> getData() async {
     ApiService.listOfDog.clear();
     await ApiService.getDogsData(pageNo: 1);
+
     setState(() {
       dataLoading = false;
     });
@@ -64,10 +66,12 @@ class _CatalogPageState extends State<CatalogPage> {
     // TODO: implement initState
     super.initState();
     dbHelper = DBHelper();
+
     createWishListTable();
 
     userModel = widget.userModel;
     getData();
+
     _scrollController.addListener(() async {
       print(
           "CONDITION ${_scrollController.position.pixels == _scrollController.position.maxScrollExtent}");
@@ -81,11 +85,20 @@ class _CatalogPageState extends State<CatalogPage> {
   }
 
   Future<void> createWishListTable() async {
-    await dbHelper.createWishlistTable();
+    bool isTableExists = await dbHelper.isTableExists();
+    print("isTableExists $isTableExists");
+    if (isTableExists == false) {
+      print("WiSHLIST TABLE WAS NOT EXIST");
+      await dbHelper.createWishlistTable();
+    }
+    print("WiSHLIST TABLE EXIST");
   }
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<WishlistProvider>(context, listen: false).getDogSharedPrefs();
+     final wishListProvider =
+        Provider.of<WishlistProvider>(context, listen: false);
     return Scaffold(
         appBar: AppBar(
           title: Text("Catalog"),
@@ -121,6 +134,9 @@ class _CatalogPageState extends State<CatalogPage> {
               child: GestureDetector(
                 onTap: () {
                   dbHelper.updateLogout(userModel.userId);
+                  wishListProvider.setuserId("");
+                  // wishListProvider.setfavDogIds(<int>[]);
+                  
 
                   Navigator.pushReplacement(
                       context,
@@ -159,8 +175,47 @@ class _CatalogPageState extends State<CatalogPage> {
                         (isLoading || !isThereMoreDogs ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index < ApiService.listOfDog.length) {
-                        return DogListItem(
-                          dogDataModel: ApiService.listOfDog[index],
+                        return FutureBuilder<DogImageModel?>(
+                          future: getImageofThisDog(
+                              ApiService.listOfDog[index].referenceImageId),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<DogImageModel?> snapshot) {
+                            print("snapshot.data ${snapshot.data}}");
+
+                            var imageUrl = Constants.dogImageUrl;
+
+                            if (snapshot.hasData && snapshot.data != null) {
+                              print("not null");
+                              // print(" not null snapshot.data");
+                              // final url =
+                              //     snapshot.data!.url ?? Constants.dogImageUrl;
+                              // print("real isValidUrl ${isValidUrl(url)}");
+                              // print(
+                              //     "another isValidUrl ${isValidUrl(Constants.dogImageUrl)}");
+                              // if (isValidUrl(Constants.dogImageUrl)) {
+                              //   print(isValidUrl(Constants.dogImageUrl));
+                              //   imageUrl = Constants.dogImageUrl;
+                              // } else {
+                              //   imageUrl = Constants.dogImageUrl;
+                              // }
+                              if (snapshot.data!.url != null) {
+                                print("url not null");
+                                imageUrl = snapshot.data!.url!;
+                              }
+
+                              print("url null");
+                            }
+
+                            print("imageUrl $imageUrl");
+
+                            print(
+                                "/////////////////////////////////////////////////////////////////");
+
+                            return DogListItem(
+                              dogDataModel: ApiService.listOfDog[index],
+                              imageUrl: imageUrl,
+                            );
+                          },
                         );
                       } else if (!isThereMoreDogs) {
                         return const Padding(
@@ -185,5 +240,25 @@ class _CatalogPageState extends State<CatalogPage> {
                   ),
                 ),
               ));
+  }
+
+  Future<DogImageModel?> getImageofThisDog(String? referenceImageId) async {
+    if (referenceImageId != null) {
+      DogImageModel? dogImageModel =
+          await ApiService.getDogImages(referenceImageId);
+      return dogImageModel;
+    }
+    return null;
+  }
+
+  bool isValidUrl(String url) {
+    final RegExp urlRegExp = RegExp(
+      r'^(http(s)?):\/\/'
+      '((([a-zA-Z0-9-]+)\.)+[a-zA-Z]{2,}|' // domain name
+      '((\d{1,3}\.){3}\d{1,3}))' // IP address
+      '(\/[^\s]*)?\$', // path
+    );
+
+    return urlRegExp.hasMatch(url);
   }
 }

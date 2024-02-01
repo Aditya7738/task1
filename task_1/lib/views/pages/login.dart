@@ -1,10 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:task_1/api/api_service.dart';
 import 'package:task_1/helpers/db_helper.dart';
 import 'package:task_1/helpers/validation_helper.dart';
-
+import 'package:task_1/providers/wishlist_provider.dart';
 import 'package:task_1/views/pages/catalog_page.dart';
 import 'package:task_1/views/pages/signup.dart';
+import 'package:provider/provider.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,6 +28,8 @@ class _LoginPageState extends State<LoginPage> {
   bool isObscured2 = true;
 
   bool isLoading = false;
+  String username = "";
+  String password = "";
 
   bool isLoginUnSuccessful = false;
 
@@ -38,11 +43,12 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
 
     dbHelper = DBHelper();
-    dbHelper.initDatabase();
   }
 
   @override
   Widget build(BuildContext context) {
+    
+    final wishListProvider = Provider.of<WishlistProvider>(context);
     return Scaffold(
         appBar: AppBar(
           title: const Text("Login"),
@@ -155,11 +161,18 @@ class _LoginPageState extends State<LoginPage> {
                               final result =
                                   await dbHelper.checkLogin(username, password);
 
+                                   print("getAllUsers ${await dbHelper.getAllUsers()}");
+
                               setState(() {
                                 isLoading = false;
                               });
 
                               if (result != null) {
+                                setState(() {
+                                  isLoginUnSuccessful = false;
+                                });
+
+                                wishListProvider.setuserId(result.userId);
                                 Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -168,12 +181,16 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     ));
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        padding: EdgeInsets.all(15.0),
-                                        backgroundColor: Colors.red,
-                                        content: Text(
-                                            "Username or password is wrong")));
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //     SnackBar(
+                                //         padding: EdgeInsets.all(15.0),
+                                //         backgroundColor: Colors.red,
+                                //         content: Text(
+                                //             "Username or password is wrong")));
+
+                                setState(() {
+                                  isLoginUnSuccessful = true;
+                                });
                               }
                             }
                           },
@@ -186,10 +203,14 @@ class _LoginPageState extends State<LoginPage> {
                                   vertical: 10.0, horizontal: 20.0),
                               child: Center(
                                 child: isLoading
-                                    ? CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2.0,
-                                        backgroundColor: Color(0xffCC868A),
+                                    ? const SizedBox(
+                                        width: 20.0,
+                                        height: 20.0,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.0,
+                                          backgroundColor: Color(0xffCC868A),
+                                        ),
                                       )
                                     : const Text(
                                         "LOGIN",
@@ -207,14 +228,12 @@ class _LoginPageState extends State<LoginPage> {
                             child: RichText(
                                 text: TextSpan(
                                     text: "Don't have account?",
-                                    style: const TextStyle(
-                                        color: Colors.black, fontSize: 17.0),
+                                    style: const TextStyle(color: Colors.black),
                                     children: <TextSpan>[
                               TextSpan(
                                 text: '  Create Account',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 17.0,
                                   color: Color(0xffCC868A),
                                 ),
                                 recognizer: TapGestureRecognizer()

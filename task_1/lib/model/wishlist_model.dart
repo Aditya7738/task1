@@ -1,16 +1,16 @@
 class WishlistModel {
   final int id;
-  final int userId;
+  final String userId;
   final String dogId;
   final String name;
-  final String referenceImageId;
+  final String imageUrl;
 
   WishlistModel({
     required this.id,
     required this.userId,
     required this.dogId,
     required this.name,
-    required this.referenceImageId,
+    required this.imageUrl,
   });
 
   Map<String, dynamic> toMap() {
@@ -19,7 +19,7 @@ class WishlistModel {
       'userId': userId,
       'dogId': dogId,
       'name': name,
-      'referenceImageId': referenceImageId
+      'imageUrl': imageUrl
     };
   }
 
@@ -29,6 +29,6 @@ class WishlistModel {
         userId: dogData["userId"],
         dogId: dogData["dogId"],
         name: dogData["name"],
-        referenceImageId: dogData["referenceImageId"]);
+        imageUrl: dogData["imageUrl"]);
   }
 }
